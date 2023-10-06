@@ -42,8 +42,9 @@ try:
             elif key == b"inward-sync":
                 email = json.loads(value)["user"]["email"]
                 name = json.loads(value)["user"]["name"]
+                event = json.loads(value)["user"]["event"]
 
-                stripeInwardSyncUtil(email, name)
+                stripeInwardSyncUtil(email, name, event)
 
 except KeyboardInterrupt:
     pass

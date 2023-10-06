@@ -11,7 +11,7 @@ user = APIRouter()
 
 
 @user.get("/")
-def get_users():
+async def get_users():
     try:
         with Session(bind=conn) as db:
             result_proxy = db.execute(users.select())
@@ -31,7 +31,7 @@ def get_users():
 
 
 @user.post("/")
-def create_user(user: User):
+async def create_user(user: User):
     try:
         with Session(bind=conn) as db:
             new_user = {"name": user.name, "email": user.email}
@@ -71,7 +71,7 @@ def create_user(user: User):
 
 
 @user.get("/{id}")
-def get_user(id: str):
+async def get_user(id: str):
     try:
         with Session(bind=conn) as db:
             if not id.isdigit():
@@ -105,7 +105,7 @@ def get_user(id: str):
 
 
 @user.put("/{id}")
-def update_user(id: str, user_update: PartialUser):
+async def update_user(id: str, user_update: PartialUser):
     try:
         with Session(bind=conn) as db:
             if not id.isdigit():
@@ -158,7 +158,7 @@ def update_user(id: str, user_update: PartialUser):
                     "email": updated_user.email,
                 },
             }
-            
+
             return JSONResponse(content=response, status_code=200)
 
     except Exception as e:
@@ -168,7 +168,7 @@ def update_user(id: str, user_update: PartialUser):
 
 
 @user.delete("/{id}")
-def delete_user(id: str):
+async def delete_user(id: str):
     try:
         with Session(bind=conn) as db:
             if not id.isdigit():
@@ -216,15 +216,14 @@ def delete_user(id: str):
 async def inward_sync(request: Request):
     try:
         payload = await request.json()
-        print(payload)
 
         updated_name = payload["data"]["object"]["name"]
         email_to_update = payload["data"]["object"]["email"]
+        event = payload["type"]
 
-        user_dict = {
-            "email": email_to_update,
-            "name": updated_name,
-        }
+        print(payload)
+
+        user_dict = {"email": email_to_update, "name": updated_name, "event": event}
 
         kafka_message = {"event": "inward-sync", "user": user_dict}
 

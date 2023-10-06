@@ -33,7 +33,7 @@ services:
       - '2181:2181'
     networks:
       - zenskar
-
+      
 networks:
   zenskar:
     driver: bridge

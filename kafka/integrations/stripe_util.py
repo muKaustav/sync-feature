@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from models.user import users
 from config.db import conn
 
+
 stripe.api_key = config("STRIPE_SECRET_KEY")
-last_sync_timestamp = int(datetime(2023, 1, 1).timestamp())
 
 
 def stripeOutwardSyncUtil(event, name, email):
@@ -101,35 +101,93 @@ def stripeOutwardSyncUtil(event, name, email):
         return
 
 
-def stripeInwardSyncUtil(email, name):
-    pass
+def stripeInwardSyncUtil(email, name, event):
     try:
         with Session(bind=conn) as db:
-            result = db.execute(
-                users.update().where(users.c.email == email).values(name=name)
-            )
+            if event == "customer.created":
+                try:
+                    result = db.execute(users.insert().values(name=name, email=email))
 
-            if result.rowcount == 0:
+                    if result.rowcount == 0:
+                        logs = {
+                            "message": f"User {email} already exists.",
+                            "timestamp": datetime.now().timestamp(),
+                        }
+
+                        print(logs)
+                        return
+
+                except Exception as e:
+                    logs = {
+                        "message": f"Synced with Stripe.",
+                        "timestamp": datetime.now().timestamp(),
+                    }
+
+                    print(logs)
+                    return
+
                 logs = {
-                    "message": f"User {email} not found.",
+                    "message": f"Created user: {email}",
                     "timestamp": datetime.now().timestamp(),
                 }
 
                 print(logs)
-                return
 
-            logs = {
-                "message": f"Updated user: {email}",
-                "timestamp": datetime.now().timestamp(),
-            }
+            elif event == "customer.deleted":
+                try:
+                    result = db.execute(users.delete().where(users.c.email == email))
 
-            print(logs)
+                    if result.rowcount == 0:
+                        logs = {
+                            "message": f"User {email} not found.",
+                            "timestamp": datetime.now().timestamp(),
+                        }
+
+                        print(logs)
+                        return
+
+                except Exception as e:
+                    logs = {
+                        "message": f"Synced with Stripe.",
+                        "timestamp": datetime.now().timestamp(),
+                    }
+
+                    print(logs)
+                    return
+
+                logs = {
+                    "message": f"Deleted user: {email}",
+                    "timestamp": datetime.now().timestamp(),
+                }
+
+                print(logs)
+
+            else:
+                result = db.execute(
+                    users.update().where(users.c.email == email).values(name=name)
+                )
+
+                if result.rowcount == 0:
+                    logs = {
+                        "message": f"User {email} not found.",
+                        "timestamp": datetime.now().timestamp(),
+                    }
+
+                    print(logs)
+                    return
+
+                logs = {
+                    "message": f"Synced with Stripe for user: {email}",
+                    "timestamp": datetime.now().timestamp(),
+                }
+
+                print(logs)
 
             db.commit()
 
     except Exception as e:
         logs = {
-            "message": f"Customer {email} not found.",
+            "message": f"Error creating/updating user: {email}",
             "error": e,
             "timestamp": datetime.now().timestamp(),
         }
