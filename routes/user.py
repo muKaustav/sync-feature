@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from sqlalchemy.orm import Session
 from config.db import conn
 from models.user import users
@@ -134,15 +134,13 @@ def update_user(id: str, user_update: PartialUser):
                 response = {"status": "ERROR", "message": "Updated user not found."}
                 return JSONResponse(content=response, status_code=404)
 
-            updated_user_dict = {
-                "id": updated_user.id,
-                "name": updated_user.name,
-                "email": updated_user.email,
-            }
-
             kafka_message = {
                 "event": "user_updated",
-                "user": updated_user_dict,
+                "user": {
+                    "id": updated_user.id,
+                    "name": updated_user.name,
+                    "email": updated_user.email,
+                },
             }
 
             produce_message(
@@ -154,8 +152,13 @@ def update_user(id: str, user_update: PartialUser):
             response = {
                 "status": "OK",
                 "message": "User updated successfully.",
-                "updated_user": updated_user_dict,
+                "updated_user": {
+                    "id": updated_user.id,
+                    "name": updated_user.name,
+                    "email": updated_user.email,
+                },
             }
+            
             return JSONResponse(content=response, status_code=200)
 
     except Exception as e:
@@ -176,7 +179,10 @@ def delete_user(id: str):
 
                 return JSONResponse(content=response, status_code=400)
 
-            email = db.execute(users.select().where(users.c.id == int(id))).first()[2]
+            to_delete = db.execute(users.select().where(users.c.id == int(id))).first()
+
+            email = to_delete[2]
+            name = to_delete[1]
 
             result = db.execute(users.delete().where(users.c.id == int(id)))
 
@@ -188,7 +194,7 @@ def delete_user(id: str):
 
             kafka_message = {
                 "event": "user_deleted",
-                "user": {"id": id, "email": email},
+                "user": {"id": id, "email": email, "name": name},
             }
 
             produce_message(
@@ -203,4 +209,35 @@ def delete_user(id: str):
     except Exception as e:
         print(e)
         response = {"status": "ERROR", "message": "Unable to delete user."}
+        return JSONResponse(content=response, status_code=500)
+
+
+@user.post("/sync")
+async def inward_sync(request: Request):
+    try:
+        payload = await request.json()
+        print(payload)
+
+        updated_name = payload["data"]["object"]["name"]
+        email_to_update = payload["data"]["object"]["email"]
+
+        user_dict = {
+            "email": email_to_update,
+            "name": updated_name,
+        }
+
+        kafka_message = {"event": "inward-sync", "user": user_dict}
+
+        produce_message(
+            "stripe-events",
+            key="inward-sync",
+            value=json.dumps(kafka_message),
+        )
+
+        response = {"status": "OK", "message": "Syncing with Stripe."}
+        return JSONResponse(content=response, status_code=200)
+
+    except Exception as e:
+        print(e)
+        response = {"status": "ERROR", "message": "Unable to sync with Stripe."}
         return JSONResponse(content=response, status_code=500)

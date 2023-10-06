@@ -1,6 +1,6 @@
 import json
 from decouple import config
-from stripe_util import stripeUtil
+from kafka.integrations.stripe_util import stripeOutwardSyncUtil, stripeInwardSyncUtil
 from confluent_kafka import Consumer, KafkaError
 
 kafka_config = {
@@ -37,10 +37,13 @@ try:
                 email = json.loads(value)["user"]["email"]
                 event = json.loads(value)["event"]
 
-                stripeUtil(event, name, email)
+                stripeOutwardSyncUtil(event, name, email)
 
             elif key == b"inward-sync":
-                pass
+                email = json.loads(value)["user"]["email"]
+                name = json.loads(value)["user"]["name"]
+
+                stripeInwardSyncUtil(email, name)
 
 except KeyboardInterrupt:
     pass
