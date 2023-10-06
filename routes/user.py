@@ -233,7 +233,7 @@ async def inward_sync(request: Request):
             value=json.dumps(kafka_message),
         )
 
-        response = {"status": "OK", "message": "Syncing with Stripe."}
+        response = {"status": "OK", "message": "Syncing with Stripe!"}
         return JSONResponse(content=response, status_code=200)
 
     except Exception as e:
