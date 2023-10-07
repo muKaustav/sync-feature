@@ -71,6 +71,11 @@ docker compose up --build
 ```
 
 - The app should be running on port 8000, and the rest of the dependencies on their respective ports.
+- In addition to that, run the following command in the root directory to start the consumer:
+
+```bash
+python run_consumer.py
+```
 
 ### 5. Ngrok Setup
 
