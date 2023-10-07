@@ -15,7 +15,7 @@ How can the above integrations with your product's customer catalog be extended 
 
 ## 🧮 | Aproach
 
-- Let's the imagine the following schemas for the customer catalog and the invoice catalog:
+- Let's imagine the following schemas for the customer catalog and the invoice catalog:
 
   ```bash
   Customer Catalog
@@ -39,7 +39,7 @@ How can the above integrations with your product's customer catalog be extended 
   payment_terms
   ```
 
-- When we create/update/delete a new customer on our product, we also create a new customer on the invoice catalog.
+- When we create/update/delete a new customer on our product, we also do the same in the invoice catalog.
 - When we generate an invoice, the system retrieves the customers' information based on the customer_id and this information is populated in the invoice.
 - The real-time synchronization between the customer catalog and the invoice catalog maintains accuracy and ensures that the invoice catalog is always up-to-date with the customer data.
 - Thus we have a seamless link between the customer catalog and the invoice catalog.

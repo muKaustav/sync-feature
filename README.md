@@ -25,7 +25,7 @@ There are many components to this system. Namely, a Postgres Database hosted on 
 ### 2. Stripe Account
 
 - Create a Stripe (test) account and get the API keys.
-- Now create a webhook endpoint with the on Stripe and point it to some random URL. We will change this URL later.
+- Now create a webhook endpoint on Stripe and point it to some random URL. We will change this URL later.
 - Add the following events to the webhook:
 
 ```bash
@@ -64,7 +64,7 @@ There are many components to this system. Namely, a Postgres Database hosted on 
 - We need docker to run the app and its dependencies, in a containerized environment.
 - Ensure you have docker desktop installed on your system.
 - Edit KAFKA_ADVERTISED_LISTENERS key with your HOST_IP.
-- Run the following command to build the docker image:
+- Run the following command to build and run the docker images:
 
 ```bash
 docker compose up --build
