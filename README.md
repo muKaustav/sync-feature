@@ -63,7 +63,7 @@ There are many components to this system. Namely, a Postgres Database hosted on 
 
 - We need docker to run the app and its dependencies, in a containerized environment.
 - Ensure you have docker desktop installed on your system.
-- Edit KAFKA_ADVERTISED_LISTENERS key with your HOST_IP.
+- Edit KAFKA_ADVERTISED_LISTENERS key with your HOST_IP, in the docker-compose.yml file.
 - Run the following command to build and run the docker images:
 
 ```bash
