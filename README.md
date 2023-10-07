@@ -70,7 +70,7 @@ There are many components to this system. Namely, a Postgres Database hosted on 
 docker compose up --build
 ```
 
-- The app, along with its dependencies should be running on port 8000.
+- The app should be running on port 8000, and the rest of the dependencies on their respective ports.
 
 ### 5. Ngrok Setup
 
