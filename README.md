@@ -1,4 +1,4 @@
-# Zenskar Assignment
+# Sync Feature
 
 ## 📚 | Problem Statement
 
